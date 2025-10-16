@@ -1,5 +1,6 @@
-import { NewNote } from '@/types/note';
 import { create } from 'zustand';
+import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
+import type { NewNote } from '@/types/note';
 
 interface DraftState {
   draft: NewNote;
@@ -13,13 +14,30 @@ const initialDraft: NewNote = {
   tag: 'Todo',
 };
 
-export const useDraftStore = create<DraftState>()((set) => ({
-  draft: initialDraft,
+const fakeStorage: StateStorage = {
+  getItem: () => null,
+  setItem: () => {},
+  removeItem: () => {},
+};
 
-  setDraft: (note) =>
-    set((state) => ({
-      draft: { ...state.draft, ...note },
-    })),
+export const useDraftStore = create<DraftState>()(
+  persist(
+    (set, get) => ({
+      draft: initialDraft,
 
-  clearDraft: () => set({ draft: initialDraft }),
-}));
+      setDraft: (note) =>
+        set(() => ({
+          draft: { ...get().draft, ...note },
+        })),
+
+      clearDraft: () => set({ draft: { ...initialDraft } }),
+    }),
+    {
+      name: 'note-draft',
+      storage: createJSONStorage(() =>
+        typeof window !== 'undefined' ? window.localStorage : fakeStorage,
+      ),
+      partialize: (state) => ({ draft: state.draft }),
+    },
+  ),
+);
