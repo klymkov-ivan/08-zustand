@@ -5,13 +5,14 @@ import {
   QueryClient,
 } from '@tanstack/react-query';
 import NotesClient from './Notes.client';
+import { Metadata } from 'next';
 
 interface Props {
   params: Promise<{ slug?: string[] }>;
   searchParams: Promise<{ topic?: string; page?: string }>;
 }
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const tag = slug?.[0] || 'All';
 
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: Props) {
     openGraph: {
       title: tagTitle,
       description: `Browse ${tagTitle.toLowerCase()} in Note Hub.`,
-      url: `/notes/filter/${tag}`,
+      url: `https://08-zustand-tau-mocha.vercel.app/notes/filter/${tag}`,
       siteName: 'NoteHub',
       images: [
         {
